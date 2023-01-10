@@ -3,12 +3,93 @@
  */
 package se.iths;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.*;
 
+import java.sql.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class AppTest {
-    @Test void appHasAGreeting() {
-        App classUnderTest = new App();
-        assertNotNull(classUnderTest.getGreeting(), "app should have a greeting");
+    private static final String JDBC_CONNECTION = "jdbc:mysql://localhost:3306/iths";
+    private static final String JDBC_USER = "iths";
+    private static final String JDBC_PASSWORD = "iths";
+    private static final String TEST_USER = "Steve";
+    private static final String TEST_ROLE = "Admin";
+    private static final String TEST_NEWROLE = "User";
+    private static final String TEST_NEWNAME = "George";
+    private static long actualIdAfterInsert;
+
+    public static Connection con = null;
+    @BeforeAll
+    public static void setUp() throws Exception{
+        con = DriverManager.getConnection(JDBC_CONNECTION,JDBC_USER,JDBC_PASSWORD);
+        con.createStatement().execute("DROP TABLE IF EXISTS User");
+        con.createStatement().execute("CREATE  TABLE  User (ID INT NOT NULL AUTO_INCREMENT, NAME VARCHAR(255), ROLE VARCHAR(255) ,PRIMARY KEY(ID))");
+    }
+    @AfterAll
+    public static void closeConnection() throws Exception{
+        con.close();
+    }
+    @Order(1)
+    @Test
+    void shouldCreateRowInDatabase() throws Exception{
+        PreparedStatement stm = con.prepareStatement("INSERT INTO User (NAME,ROLE) values (?,?)", Statement.RETURN_GENERATED_KEYS);
+        stm.setString(1,TEST_USER);
+        stm.setString(2,TEST_ROLE);
+        stm.execute();
+        ResultSet rs = stm.getGeneratedKeys();
+        assertTrue(rs.next(),"Should have a row with generated id");
+        final long expectedIdAfterInsert = 1L;
+        actualIdAfterInsert = rs.getLong(1);
+        assertEquals(expectedIdAfterInsert,actualIdAfterInsert,"Should have correct id after insert!");
+    }
+
+    @Order(2)
+    @Test
+    void shouldFindRowInDataBase() throws Exception {
+        PreparedStatement stm = con.prepareStatement("SELECT Id,Name,Role FROM User WHERE ID = ?");
+        stm.setLong(1, actualIdAfterInsert);
+        ResultSet rs = stm.executeQuery();
+        assertTrue(rs.next(),"Should find one row");
+        assertEquals(actualIdAfterInsert,rs.getLong("Id"),"Selected Id should match");
+        assertTrue(TEST_USER.equalsIgnoreCase(rs.getString("Name")),"Selected user should match");
+        assertTrue(TEST_ROLE.equalsIgnoreCase(rs.getString("Role")),"Selected Role should match");
+        rs.close();
+        stm.close();
+    }
+    @Order(3)
+    @Test
+    void shouldUpdateRowInDataBase() throws Exception{
+        PreparedStatement stRole = con.prepareStatement("UPDATE User Set ROLE = ? WHERE ID = ?");
+        PreparedStatement stName = con.prepareStatement("UPDATE User Set NAME = ? WHERE ID = ?");
+        stRole.setString(1, TEST_NEWROLE);
+        stName.setString(1,TEST_NEWNAME);
+        stRole.setLong(2,actualIdAfterInsert);
+        stName.setLong(2,actualIdAfterInsert);
+
+        System.out.println("Updating Role");
+        stRole.execute();
+        stRole = con.prepareStatement("SELECT Role FROM User WHERE Id = ?");
+        stRole.setLong(1,actualIdAfterInsert);
+        ResultSet rsRole = stRole.executeQuery();
+        assertTrue(rsRole.next(),"Should find one row!");
+        assertTrue(TEST_NEWROLE.equalsIgnoreCase(rsRole.getString("Role")),"Updated role should match!");
+
+        System.out.println("Updating Name");
+        stName.execute();
+        stName = con.prepareStatement("SELECT Name FROM User WHERE Id = ?");
+        stName.setLong(1,actualIdAfterInsert);
+        ResultSet rsName = stName.executeQuery();
+        assertTrue(rsName.next(),"Should find one row!");
+        assertTrue(TEST_NEWNAME.equalsIgnoreCase(rsName.getString("Name")),"Updated Name should match!");
+    }
+    @Order(4)
+    @Test
+    void ShouldDeleteRowInDatabase() throws Exception {
+        con.createStatement().execute("DELETE  FROM User");
+        Statement stm = con.createStatement();
+        ResultSet rs = stm.executeQuery("SELECT count(*) FROM User");
+        assertTrue(rs.next(),"Should find one row with count!");
+        assertEquals(0,rs.getInt(1),"Table should be empty");
     }
 }
