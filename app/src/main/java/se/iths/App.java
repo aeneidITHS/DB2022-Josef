@@ -3,12 +3,35 @@
  */
 package se.iths;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+
 public class App {
-    public String getGreeting() {
-        return "Hello World!";
+    private static final String JDBC_CONNECTION = "jdbc:mysql://localhost:3306/iths";
+    private static final String JDBC_USER = "iths";
+    private static final String JDBC_PASSWORD = "iths";
+
+    public static Connection con = null;
+    @BeforeAll
+    public static void setUp() throws Exception{
+        con = DriverManager.getConnection(JDBC_CONNECTION,JDBC_USER,JDBC_PASSWORD);
+        con.createStatement().execute("DROP TABLE IF EXISTS User");
+        con.createStatement().execute("CREATE  TABLE  User (ID INT NOT NULL AUTO_INCREMENT, NAME VARCHAR(255), ROLE VARCHAR(255) ,PRIMARY KEY(ID))");
+    }
+    @AfterAll
+    public static void teardown() throws Exception{
+        con.close();
     }
 
-    public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+    void createRowInDatabase() throws Exception{
+        PreparedStatement st = con.prepareStatement("DROP VIEW IF EXISTS PhoneList ");
+        PreparedStatement stmt = con.prepareStatement("CREATE VIEW PhoneList AS SELECT CONCAT(FirstName, ' ', LastName) as Name, group_concat(Number) AS Numbers FROM Phone JOIN Student using(StudentId) GROUP BY StudentId; ");
+        st.execute();
+        stmt.execute();
     }
+
 }
