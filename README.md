@@ -1,6 +1,6 @@
 # DB2022-Josef
 
-##Entity RelationsShip Diagram
+## Entity RelationsShip Diagram
 erDiagram
     Student ||--o{ Phone : has
     Student }|--o| Grade : has
