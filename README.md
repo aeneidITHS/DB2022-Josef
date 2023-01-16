@@ -75,4 +75,11 @@ docker run -d --name iths-mysql\
    ```
    docker cp denormalized-data.csv iths-mysql:/var/lib/mysql-files
    ```
-    
+   Kör SQL scriptfilen som normaliserar data i filen ovan. 
+   ```
+   docker exec -i iths-mysql -uroot -proot < normalisering.sql
+   ```
+   Kör java projektet
+   ```
+   gradle test 
+   ```
