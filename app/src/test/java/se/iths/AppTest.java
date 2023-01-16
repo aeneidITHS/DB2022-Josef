@@ -91,9 +91,5 @@ class AppTest {
         ResultSet rs = stm.executeQuery("SELECT count(*) FROM User");
         assertTrue(rs.next(),"Should find one row with count!");
         assertEquals(0,rs.getInt(1),"Table should be empty");
-        PreparedStatement stuff = con.prepareStatement("DROP VIEW IF EXISTS PhoneList ");
-        PreparedStatement stuf = con.prepareStatement("CREATE VIEW PhoneList AS SELECT CONCAT(FirstName, ' ', LastName) as Name, group_concat(Number) AS Numbers FROM Phone JOIN Student using(StudentId) GROUP BY StudentId; ");
-        stuff.execute();
-        stuf.execute();
     }
 }
