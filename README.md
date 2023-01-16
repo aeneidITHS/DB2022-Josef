@@ -1,6 +1,6 @@
 # DB2022-Josef
 
-## Entity RelationsShip Diagram
+## Entity RelationShip Diagram
 ```mermaid
 erDiagram
     Student ||--o{ Phone : has
