@@ -13,17 +13,16 @@ erDiagram
     
     Student {
         int StudentId
-        string Name
+        varchar FirstName
+	varchar LastName
         int GradeId
     }
     
     Phone {
         int PhoneId
         int StudentId
-        tinyint IsHome 
-        tinyint IsJob
-        tinyint IsMobile
-        string number
+        varchar Type
+	varchar Number
     }
     
     School {
@@ -37,9 +36,9 @@ erDiagram
         int SchoolId
     }
     
-    Hobby {
+    Hobbies {
         int HobbyId
-        string name
+        varchar name
     }
     StudentHobby {
         int StudentId
